@@ -24,6 +24,7 @@ db.create_all()
 
 from app.controller.usuario import *
 from app.controller.login import *
+from app.controller.cidade import *
 #from app.controllers.palestra.routes import palestras_blueprint
 
 
