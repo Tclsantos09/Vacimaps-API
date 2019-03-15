@@ -1,0 +1,11 @@
+Insert into Cidade (nome_doenca, ds_doenca) values ('Malária', '');
+Insert into Cidade (nome_doenca, ds_doenca) values ('Leishmaniose', '');
+Insert into Cidade (nome_doenca, ds_doenca) values ('Esquistossomose', '');
+Insert into Cidade (nome_doenca, ds_doenca) values ('Febre Amarela', '');
+Insert into Cidade (nome_doenca, ds_doenca) values ('Dengue', '');
+Insert into Cidade (nome_doenca, ds_doenca) values ('Tracoma', '');
+Insert into Cidade (nome_doenca, ds_doenca) values ('Doença de Chagas', '');
+Insert into Cidade (nome_doenca, ds_doenca) values ('Hanseníase', '');
+Insert into Cidade (nome_doenca, ds_doenca) values ('Tuberculose', '');
+Insert into Cidade (nome_doenca, ds_doenca) values ('Cólera', '');
+Insert into Cidade (nome_doenca, ds_doenca) values ('Gripe A', '');
