@@ -1,7 +1,7 @@
 from app.models.table_usuario import Usuario
 from app import db, app, mail
-from flask import request, jsonify,url_for
-from werkzeug.security import generate_password_hash
+from flask import request, jsonify,url_for, make_response, redirect, url_for
+from werkzeug.security import generate_password_hash,check_password_hash
 from app.controller.login import token_required
 from itsdangerous import URLSafeTimedSerializer, SignatureExpired
 from sqlalchemy import exc
@@ -42,11 +42,13 @@ def post_user():
         db.session.add(usuario)
         db.session.commit()
 
+        func = 'email_confirm'
+
     except exc.IntegrityError as e:
         db.session().rollback()
         return jsonify({'Mensagem': 'O email informado já está cadastrado!'})
 
-    return send_email_confirm(usuario.email)
+    return send_email_confirm(usuario.email, func)
 
     #return jsonify({'Mensagem': 'Usuário adicionado com sucesso!'})
 
@@ -73,22 +75,22 @@ def edit_usuario(current_user):
 
 
 #********************************* Enviar Email  ***********************
-def send_email_confirm(email):
+def send_email_confirm(email, func):
     token = s.dumps(email, salt='email-confirm')
 
     msg = Message('Confirm Email', sender='vacimaps@gmail.com', recipients=[email])
 
-    link = url_for('.email_confirm', token = token, external = True)
+    link = url_for('.{}'.format(func), token = token, external = True)
 
-    msg.body = 'Copie e Cole o link no seu navegador para confirmar seu email: \n\n {}'.format(link)    
+    msg.body = 'Click ou Copie e Cole o link no seu navegador, para ser autenticado: \n\n {}'.format(link)    
     mail.send(msg)
 
-    return jsonify({'Mensagem': 'Cadastrado com sucesso! Entre no seu E-mail para confirmar!'})
+    return jsonify({'Mensagem': 'E-mail enviado com sucesso! Entre no seu E-mail para confirmar!'})
 
 @app.route('/emailconfirm/<token>')
 def email_confirm(token):
     try:
-        email = s.loads(token, salt='email-confirm', max_age = 90)
+        email = s.loads(token, salt='email-confirm')
 
         usuario = Usuario.query.filter_by(email = email).first()
 
@@ -102,3 +104,50 @@ def email_confirm(token):
         return "link expirado!"
 
     return jsonify({'Mensagem': "E-mail verificado com sucesso!"})
+
+
+@app.route('/forgot_password', methods=['POST'])
+def forgot_password():
+    auth = request.get_json()
+    if not auth or not auth['email']:
+        return make_response('Não foi possivel verificar', 401, {'WWW-Authenticate': 'Basic realm="Login required!"'})
+    
+    usuario = Usuario.query.filter_by(email = auth['email']).first()
+
+    if not usuario:
+        return make_response('Não foi possivel verificar', 401, {'WWW-Authenticate': 'Basic realm="Login required!"'})
+    
+    func = 'test_token'
+    return send_email_confirm(usuario.email, func)
+
+
+@app.route('/test_token/<token>')
+def test_token(token):
+    try:
+        email = s.loads(token, salt='email-confirm')
+
+        usuario = Usuario.query.filter_by(email = email).first()
+
+        if not usuario:
+            return jsonify({'Mensagem': 'Usuário não encontrado'})        
+        
+    except SignatureExpired:        
+        return "link expirado!"
+
+    return redirect('Tela de redirecionamento', id = usuario.id_usuario)
+
+@app.route('/reset_password/<id>', methods = ['PUT'])
+def reset_password(id):
+    usuario = Usuario.query.filter_by(id_usuario = id).first()
+
+    if not usuario:
+        return jsonify({'Mensagem': 'Usuário não encontrado'})
+        
+    data = request.get_json()
+
+    if data['senha']:
+        usuario.senha = data['senha']
+
+    db.session.commit()
+
+    return jsonify({'Mensagem': 'Senha alterado com sucesso!'})
