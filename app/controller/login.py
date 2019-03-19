@@ -48,3 +48,6 @@ def login():
     
     return make_response('Não foi possivel verificar', 401, {'WWW-Authenticate': 'Basic realm="Login required!"'})
 
+@app.route('/')
+def index():
+    return "<h1> API do Back </h1><p>Para testar basta usuar o Postman e seguir as intruções do README.MD, disponivel no <a href='https://github.com/Tclsantos09/Vacimaps-API'>GitHUB</a></p>"

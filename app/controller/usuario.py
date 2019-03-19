@@ -43,12 +43,13 @@ def post_user():
         db.session.commit()
 
         func = 'email_confirm'
+        texto = 'Click ou Copie e Cole o link no seu navegador, para ser autenticado'
 
     except exc.IntegrityError as e:
         db.session().rollback()
         return jsonify({'Mensagem': 'O email informado já está cadastrado!'})
 
-    return send_email_confirm(usuario.email, func)
+    return send_email_confirm(usuario.email, texto, func)
 
     #return jsonify({'Mensagem': 'Usuário adicionado com sucesso!'})
 
@@ -75,14 +76,14 @@ def edit_usuario(current_user):
 
 
 #********************************* Enviar Email  ***********************
-def send_email_confirm(email, func):
+def send_email_confirm(email, texto, func):
     token = s.dumps(email, salt='email-confirm')
 
     msg = Message('Confirm Email', sender='vacimaps@gmail.com', recipients=[email])
 
     link = url_for('.{}'.format(func), token = token, external = True)
 
-    msg.body = 'Click ou Copie e Cole o link no seu navegador, para ser autenticado: \n\n {}'.format(link)    
+    msg.body = '{}: \n\n https://vacimaps-app.herokuapp.com{}'.format(texto,link)    
     mail.send(msg)
 
     return jsonify({'Mensagem': 'E-mail enviado com sucesso! Entre no seu E-mail para confirmar!'})
@@ -117,12 +118,13 @@ def forgot_password():
     if not usuario:
         return make_response('Não foi possivel verificar', 401, {'WWW-Authenticate': 'Basic realm="Login required!"'})
     
-    func = 'test_token'
-    return send_email_confirm(usuario.email, func)
+    func = 'validar_token'
+    texto = 'Click ou Copie e Cole o link no seu navegador, para trocar sua senha'
+    return send_email_confirm(usuario.email, texto, func)
 
 
-@app.route('/test_token/<token>')
-def test_token(token):
+@app.route('/validar_token/<token>')
+def validar_token(token):
     try:
         email = s.loads(token, salt='email-confirm')
 
@@ -134,7 +136,7 @@ def test_token(token):
     except SignatureExpired:        
         return "link expirado!"
 
-    return redirect('Tela de redirecionamento', id = usuario.id_usuario)
+    return 'Tela de redirecionamento/id do usuario = {}'.format(usuario.id_usuario)
 
 @app.route('/reset_password/<id>', methods = ['PUT'])
 def reset_password(id):
@@ -146,7 +148,8 @@ def reset_password(id):
     data = request.get_json()
 
     if data['senha']:
-        usuario.senha = data['senha']
+        password = generate_password_hash(data['senha'])
+        usuario.senha = password
 
     db.session.commit()
 
