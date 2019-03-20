@@ -9,10 +9,11 @@ from flask_mail import Message
 
 s = URLSafeTimedSerializer('this-is-secret') #melhorar essa chave de segurança
 
-@app.route('/usuario/<user_id>', methods=['GET'])
+
+@app.route('/usuario', methods=['GET'])
 @token_required
-def get_one_user(current_user, user_id):
-    info = Usuario.query.filter_by(id_usuario = user_id).first()
+def get_one_user(current_user):
+    info = Usuario.query.filter_by(id_usuario = current_user.id_usuario).first()
 
     if not info:
         return jsonify({'Mensagem': 'Usuário não encontrado!'})

@@ -2,6 +2,7 @@
 from flask import Flask, render_template 
 from flask_sqlalchemy import SQLAlchemy
 from flask_mail import Mail
+from flask_cors import CORS
 
 
 app = Flask(__name__)
@@ -9,6 +10,7 @@ app = Flask(__name__)
 app.config.from_object('config')
 db = SQLAlchemy(app)
 mail = Mail(app)
+CORS(app)
 
 from app.models.table_cidade import Cidade
 from app.models.table_doenca import Doenca
