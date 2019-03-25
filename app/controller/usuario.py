@@ -111,13 +111,11 @@ def email_confirm(token):
 @app.route('/forgot_password', methods=['POST'])
 def forgot_password():
     auth = request.get_json()
-    if not auth or not auth['email']:
-        return make_response('Não foi possivel verificar', 401, {'WWW-Authenticate': 'Basic realm="Login required!"'})
-    
+
     usuario = Usuario.query.filter_by(email = auth['email']).first()
 
     if not usuario:
-        return make_response('Não foi possivel verificar', 401, {'WWW-Authenticate': 'Basic realm="Login required!"'})
+        return jsonify({'Mensagem': 'Usuario não encontrado!'})
     
     func = 'validar_token'
     texto = 'Click ou Copie e Cole o link no seu navegador, para trocar sua senha'

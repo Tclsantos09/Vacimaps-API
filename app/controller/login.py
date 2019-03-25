@@ -33,20 +33,17 @@ def token_required(f):
 @app.route('/login', methods=['POST'])
 def login():
     auth = request.get_json()
-    if not auth or not auth['email'] or not auth['password']:
-        return make_response('Não foi possivel verificar', 401, {'WWW-Authenticate': 'Basic realm="Login required!"'})
-    
     usuario = Usuario.query.filter_by(email = auth['email']).first()
 
     if not usuario:
-        return make_response('Não foi possivel verificar', 401, {'WWW-Authenticate': 'Basic realm="Login required!"'})
+        return jsonify({'Mensagem': 'Usuario não encontrado'})
     
     if check_password_hash(usuario.senha, auth['password']):
         token = jwt.encode({'id_usuario': usuario.id_usuario, 'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes = 40)}, app.config['SECRET_KEY'])
         
         return jsonify({'token': token.decode('UTF-8')})
     
-    return make_response('Não foi possivel verificar', 401, {'WWW-Authenticate': 'Basic realm="Login required!"'})
+    return jsonify({'Mensagem': 'Senha Incorreta!'})
 
 @app.route('/')
 def index():
