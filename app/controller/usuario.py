@@ -44,7 +44,7 @@ def post_user():
         db.session.commit()
 
         func = 'email_confirm'
-        texto = 'Click ou Copie e Cole o link no seu navegador, para ser autenticado'
+    texto = 'Olá, Tudo bem? \n\n Seja bem vindo ao Vacimaps, click no link abaixo, para ser autenticado!'
 
     except exc.IntegrityError as e:
         db.session().rollback()
@@ -84,7 +84,7 @@ def send_email_confirm(email, texto, func):
 
     link = url_for('.{}'.format(func), token = token, external = True)
 
-    msg.body = '{}: \n\n https://vacimaps-app.herokuapp.com{}'.format(texto,link)    
+    msg.body = '{}\nhttps://vacimaps-app.herokuapp.com{}'.format(texto,link)    
     mail.send(msg)
 
     return jsonify({'Mensagem': 'E-mail enviado com sucesso! Entre no seu E-mail para confirmar!'})
@@ -118,7 +118,7 @@ def forgot_password():
         return jsonify({'Mensagem': 'Usuario não encontrado!'})
     
     func = 'validar_token'
-    texto = 'Click ou Copie e Cole o link no seu navegador, para trocar sua senha'
+    texto = 'Olá, Tudo bem? \n\nPelo visto você esqueceu sua senha! Não tem problema, click no link abaixo para troca-la!'
     return send_email_confirm(usuario.email, texto, func)
 
 
