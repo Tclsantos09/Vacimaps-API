@@ -45,6 +45,22 @@ PUT - Atualiza informações do usuário logado
     "email": "usuario1@email.com",
 }
 ```
+```bash
+POST - Enviar o email pra redefinir senha
+/forgot_password
+
+{ 
+    "email": "usuario@email.com", 
+}
+```
+```bash
+POST - Redefinir a senha
+/forgot_password
+
+{ 
+    "senha": "novaSenha", 
+}
+```
 
 ### Instruções Login usando o Postman ###
 
