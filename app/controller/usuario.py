@@ -1,4 +1,6 @@
 from app.models.table_usuario import Usuario
+from app.models.table_usuario_vacina import Usuario_Vacina
+from app.models.table_vacina import Vacina
 from app import db, app, mail
 from flask import request, jsonify,url_for, make_response, redirect, url_for
 from werkzeug.security import generate_password_hash,check_password_hash
@@ -13,17 +15,31 @@ s = URLSafeTimedSerializer('this-is-secret') #melhorar essa chave de segurança
 @app.route('/usuario', methods=['GET'])
 @token_required
 def get_one_user(current_user):
-    info = Usuario.query.filter_by(id_usuario = current_user.id_usuario).first()
+    user = Usuario.query.filter_by(id_usuario = current_user.id_usuario).first()
+    vacinas_user = Usuario_Vacina.query.filter_by(id_usuario_vacina = current_user.id_usuario).first()
 
-    if not info:
+    if not user:
         return jsonify({'Mensagem': 'Usuário não encontrado!'})
 
     usuario = {}
-    usuario['id_usuario'] = info.id_usuario
-    usuario['nome'] = info.nome
-    usuario['email'] = info.email
-    usuario['validado'] = info.validado
+    usuario['id_usuario'] = user.id_usuario
+    usuario['nome'] = user.nome
+    usuario['email'] = user.email
+    usuario['validado'] = user.validado
 
+    vacinas = []
+    if vacinas_user:
+        _vacina = {}
+        for vacina in vacinas_user:
+            nm_vacina = Vacimaps.query.filter_by(id_vacina = vacina.id_vacina).firt()
+            _vacina['vacina'] = nm_vacina.nome_vacina
+            #_vacina['Data'] = vacina.data_vacina
+            _vacina['descricao'] = nm_vacina.ds_vacina
+        vacinas.append(_vacina)
+        usuario['vacinas'] = vacinas
+    else:
+        usuario['vacinas'] = "Nenhuma vacina cadastrada!"
+    
     return jsonify(usuario)
 
 
@@ -44,7 +60,7 @@ def post_user():
         db.session.commit()
 
         func = 'email_confirm'
-    texto = 'Olá, Tudo bem? \n\n Seja bem vindo ao Vacimaps, click no link abaixo, para ser autenticado!'
+        texto = 'Olá, Tudo bem? \n\n Seja bem vindo ao Vacimaps, click no link abaixo, para ser autenticado!'
 
     except exc.IntegrityError as e:
         db.session().rollback()
