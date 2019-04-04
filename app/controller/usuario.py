@@ -8,6 +8,7 @@ from app.controller.login import token_required
 from itsdangerous import URLSafeTimedSerializer, SignatureExpired
 from sqlalchemy import exc
 from flask_mail import Message
+import random
 
 s = URLSafeTimedSerializer('this-is-secret') #melhorar essa chave de segurança
 
@@ -93,6 +94,27 @@ def edit_usuario(current_user):
 
 
 #********************************* Enviar Email  ***********************
+def send_code_confirm(email, texto, func):
+
+    msg = Message('Confirm Email', sender='vacimaps@gmail.com', recipients=[email])
+    usuario = Usuario.query.filter_by(email = email).first()
+
+    i = 1
+    while i < 2:
+        code = str(random.randrange(100000, 999999))
+
+        try:
+            usuario.token_pswd_reset = code
+            db.session.commit()
+            break
+        except exc.IntegrityError as e:
+            db.session().rollback()
+
+    msg.body = '{}{}'.format(texto, code)    
+    mail.send(msg)
+
+    return jsonify({'Mensagem': 'E-mail enviado com sucesso! Entre no seu E-mail para confirmar!'})
+
 def send_email_confirm(email, texto, func):
     token = s.dumps(email, salt='email-confirm')
 
@@ -121,7 +143,7 @@ def email_confirm(token):
     except SignatureExpired:        
         return "link expirado!"
 
-    return jsonify({'Mensagem': "E-mail verificado com sucesso!"})
+    return redirect('https://vacimaps-app-ionic.herokuapp.com/')
 
 
 @app.route('/forgot_password', methods=['POST'])
@@ -134,38 +156,36 @@ def forgot_password():
         return jsonify({'Mensagem': 'Usuario não encontrado!'})
     
     func = 'validar_token'
-    texto = 'Olá, Tudo bem? \n\nPelo visto você esqueceu sua senha! Não tem problema, click no link abaixo para troca-la!'
-    return send_email_confirm(usuario.email, texto, func)
+    texto = 'Olá, Tudo bem? \n\nPelo visto você esqueceu sua senha! Não tem problema, aqui está seu codigo para trocar a senha: '
+    return send_code_confirm(usuario.email, texto, func)
 
 
-@app.route('/validar_token/<token>')
-def validar_token(token):
-    try:
-        email = s.loads(token, salt='email-confirm')
-
-        usuario = Usuario.query.filter_by(email = email).first()
-
-        if not usuario:
-            return jsonify({'Mensagem': 'Usuário não encontrado'})        
-        
-    except SignatureExpired:        
-        return "link expirado!"
-
-    return 'Tela de redirecionamento/id do usuario = {}'.format(usuario.id_usuario)
-
-@app.route('/reset_password/<id>', methods = ['PUT'])
-def reset_password(id):
-    usuario = Usuario.query.filter_by(id_usuario = id).first()
+@app.route('/validar_token', methods=['POST'])
+def validar_token():
+    data = request.get_json()
+    
+    usuario = Usuario.query.filter_by(token_pswd_reset = data['token']).first()
 
     if not usuario:
-        return jsonify({'Mensagem': 'Usuário não encontrado'})
+        return jsonify({'Mensagem': 'Código inválido!'})   
+
+    return '{}'.format(usuario.id_usuario) 
+
+@app.route('/reset_password', methods = ['PUT'])
+def reset_password():
+    data = request.get_json()
+    usuario = Usuario.query.filter_by(id_usuario = data['id']).first()
+
+    if not usuario:
+        return jsonify({'Mensagem': 'Usuario não encontrado!'})
         
     data = request.get_json()
 
     if data['senha']:
         password = generate_password_hash(data['senha'])
         usuario.senha = password
+        usuario.token_pswd_reset = None 
 
     db.session.commit()
 
-    return jsonify({'Mensagem': 'Senha alterado com sucesso!'})
+    return jsonify({'Mensagem': 'Senha alterada com sucesso!'})
