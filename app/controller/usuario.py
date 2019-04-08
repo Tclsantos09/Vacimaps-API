@@ -204,7 +204,7 @@ def get_one_user_vacina(current_user,id_vacina):
     if not vacinas_user:
         return jsonify({'Mensagem': 'Vacina não encontrada!'})
 
-    nm_vacina = Vacina.query.filter_by(id_vacina = vacinas_user.id_vacina).first()
+    nm_vacina = Vacina.query.filter_by(id_usuario_vacina = vacinas_user.id_vacina).first()
 
     if vacinas_user:
         vacina = {}
@@ -248,7 +248,7 @@ def post_user_vacina(current_user):
 def edit_user_vacina(current_user,id_vacina):
     data = request.get_json()
 
-    vacinas_user = Usuario_Vacina.query.filter_by(id_vacina = id_vacina).first()
+    vacinas_user = Usuario_Vacina.query.filter_by(id_usuario_vacina = id_vacina).first()
 
     if not vacinas_user:
         return jsonify({'Mensagem': 'Vacina não encontrado!'})
@@ -269,7 +269,7 @@ def edit_user_vacina(current_user,id_vacina):
 @token_required
 def del_user_vacina(current_user,id_vacina):
 
-    vacinas_user = Usuario_Vacina.query.filter_by(id_vacina = id_vacina).first()
+    vacinas_user = Usuario_Vacina.query.filter_by(id_usuario_vacina = id_vacina).first()
 
     if not vacinas_user:
         return jsonify({'Mensagem': 'Vacina não encontrado!'})
