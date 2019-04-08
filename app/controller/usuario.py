@@ -194,6 +194,31 @@ def reset_password():
 
     return jsonify({'Mensagem': 'Senha alterada com sucesso!'})
 
+@app.route('/change_password', methods = ['PUT'])
+@token_required
+def change_password(current_user):
+    data = request.get_json()
+    usuario = Usuario.query.filter_by(id_usuario = current_user.id_usuario).first()
+
+    if not usuario:
+        return jsonify({'Mensagem': 'Usuario não encontrado!'})
+        
+    data = request.get_json()
+
+    if check_password_hash(usuario.senha, data['senha_atual']):
+
+        if data['nova_senha']:
+            password = generate_password_hash(data['nova_senha'])
+            usuario.senha = password
+            usuario.token_pswd_reset = None 
+
+        db.session.commit()
+
+    else:
+        return jsonify({'Mensagem': 'A senha atual errada!'})
+
+    return jsonify({'Mensagem': 'Senha alterada com sucesso!'})
+
 #***************************** VACINAS USUARIO ***************************
 
 @app.route('/usuario/vacina/<id_vacina>', methods=['GET'])
