@@ -9,6 +9,7 @@ class Usuario(db.Model):
     senha = db.Column(db.String(500))
     validado = db.Column(db.Boolean)
     token_pswd_reset = db.Column(db.Integer, unique = True)
+    dt_nascimento = db.Column(db.Date)
 
     def __init__(self, nome, email, senha, validado):
         self.nome = nome

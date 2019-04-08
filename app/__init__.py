@@ -19,6 +19,8 @@ from app.models.table_usuario import Usuario
 from app.models.table_vacina import Vacina
 from app.models.table_usuario_vacina import Usuario_Vacina
 from app.models.table_vacina_doenca import Vacina_Doenca
+from app.models.table_sintoma import Sintoma
+from app.models.table_doenca_sintoma import Doenca_Sintoma
 
 db.create_all()
 

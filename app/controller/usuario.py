@@ -17,7 +17,7 @@ s = URLSafeTimedSerializer('this-is-secret') #melhorar essa chave de segurança
 @token_required
 def get_one_user(current_user):
     user = Usuario.query.filter_by(id_usuario = current_user.id_usuario).first()
-    vacinas_user = Usuario_Vacina.query.filter_by(id_usuario_vacina = current_user.id_usuario).first()
+    vacinas_user = Usuario_Vacina.query.filter_by(id_usuario = current_user.id_usuario).all()
 
     if not user:
         return jsonify({'Mensagem': 'Usuário não encontrado!'})
@@ -27,15 +27,19 @@ def get_one_user(current_user):
     usuario['nome'] = user.nome
     usuario['email'] = user.email
     usuario['validado'] = user.validado
+    usuario['dt_nascimento'] = user.dt_nascimento
 
     vacinas = []
     if vacinas_user:
         _vacina = {}
         for vacina in vacinas_user:
-            nm_vacina = Vacimaps.query.filter_by(id_vacina = vacina.id_vacina).firt()
+            nm_vacina = Vacina.query.filter_by(id_vacina = vacina.id_vacina).first()
             _vacina['vacina'] = nm_vacina.nome_vacina
-            #_vacina['Data'] = vacina.data_vacina
-            _vacina['descricao'] = nm_vacina.ds_vacina
+            _vacina['reforço'] = nm_vacina.cd_reforco
+            _vacina['id'] = vacina.id_usuario_vacina
+            _vacina['data_vacina'] = vacina.data_vacina.strftime('%d/%m/%Y')
+            _vacina['data_reforco'] = vacina.data_reforco.strftime('%d/%m/%Y')
+            _vacina['local'] = vacina.ds_local_vacina
         vacinas.append(_vacina)
         usuario['vacinas'] = vacinas
     else:
@@ -189,3 +193,89 @@ def reset_password():
     db.session.commit()
 
     return jsonify({'Mensagem': 'Senha alterada com sucesso!'})
+
+#***************************** VACINAS USUARIO ***************************
+
+@app.route('/usuario/vacina/<id_vacina>', methods=['GET'])
+@token_required
+def get_one_user_vacina(current_user,id_vacina):
+    vacinas_user = Usuario_Vacina.query.filter_by(id_vacina = id_vacina).first()    
+
+    if not vacinas_user:
+        return jsonify({'Mensagem': 'Vacina não encontrada!'})
+
+    nm_vacina = Vacina.query.filter_by(id_vacina = vacinas_user.id_vacina).first()
+
+    if vacinas_user:
+        vacina = {}
+        vacina['vacina'] = nm_vacina.nome_vacina
+        vacina['reforço'] = nm_vacina.cd_reforco
+        vacina['data_vacina'] = vacinas_user.data_vacina.strftime('%d/%m/%Y')
+        vacina['data_reforco'] = vacinas_user.data_reforco.strftime('%d/%m/%Y')
+        vacina['local'] = vacinas_user.ds_local_vacina
+
+    else:
+        return jsonify({'Mensagem': 'Nenhuma vacina encontrada!'})
+    
+    return jsonify(vacina)
+
+@app.route('/usuario/vacina', methods=['POST'])
+@token_required
+def post_user_vacina(current_user):
+    data = request.get_json()
+
+    user_vacina = Usuario_Vacina(
+        id_usuario = current_user.id_usuario,
+        id_vacina=data['id_vacina'],
+        ds_local_vacina=data['ds_local_vacina'],
+        data_vacina=data['data_vacina'],
+        data_reforco = '2019-02-02'
+    )    
+
+    try:
+        db.session.add(user_vacina)
+        db.session.commit()
+
+    except exc.IntegrityError as e:
+
+        return jsonify({'Mensagem': 'Erro ao cadastrar vacina!'})
+
+    return jsonify({'Mensagem': "Vacina Cadastrada com sucesso'"})
+
+
+@app.route('/usuario/vacina/<id_vacina>', methods=['PUT'])
+@token_required
+def edit_user_vacina(current_user,id_vacina):
+    data = request.get_json()
+
+    vacinas_user = Usuario_Vacina.query.filter_by(id_vacina = id_vacina).first()
+
+    if not vacinas_user:
+        return jsonify({'Mensagem': 'Vacina não encontrado!'})
+
+    else:
+        if data['data_vacina']:
+            vacinas_user.data_vacina = data['data_vacina']
+
+        if data['ds_local_vacina']:
+            vacinas_user.ds_local_vacina = data['ds_local_vacina']
+
+        db.session.commit()
+
+        return jsonify({'Mensagem': 'Vacina alterada com sucesso!'})
+
+
+@app.route('/usuario/vacina/<id_vacina>', methods=['DELETE'])
+@token_required
+def del_user_vacina(current_user,id_vacina):
+
+    vacinas_user = Usuario_Vacina.query.filter_by(id_vacina = id_vacina).first()
+
+    if not vacinas_user:
+        return jsonify({'Mensagem': 'Vacina não encontrado!'})
+
+    else:
+        db.session.delete(vacinas_user)
+        db.session.commit()
+
+        return jsonify({'Mensagem': 'Vacina deletada com sucesso!'})

@@ -61,6 +61,34 @@ POST - Redefinir a senha
     "senha": "novaSenha", 
 }
 ```
+```bash
+GET - Retorna dados da vacina do ususario
+/usuario/vacina/<id_vacina>
+```
+```bash
+POST - Cadastra uma vacina
+/usuario/vacina
+
+{
+    "id_vacina": 1,
+    "ds_local_vacina": "Postinho de mongaguá",
+    "data_vacina": "2019-01-17"
+}
+
+```
+```bash
+PUT - Atualiza informações da vacina
+/usuário/vacina/<id_vacina>
+
+{
+    "ds_local_vacina": "Postinho de mongaguá vila atlantica",
+    "data_vacina": "2019-02-17"
+}
+```
+```bash
+DELETE - Deleta vacina do usuário
+/usuário/vacina/<id_vacina>
+```
 
 ### Instruções Login usando o Postman ###
 

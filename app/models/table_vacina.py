@@ -5,9 +5,11 @@ class Vacina(db.Model):
 
     id_vacina = db.Column(db.Integer,primary_key=True)    
     nome_vacina = db.Column(db.String(45))
-    ds_vacina = db.Column(db.String(75))
+    cd_reforco = db.Column(db.Boolean)
+    num_duracao_meses = db.Column(db.Integer)
 
-    def __init__(self, nome_vacina, ds_vacina):
+    def __init__(self, nome_vacina, cd_reforco, num_duracao_meses):
         self.nome_vacina = nome_vacina
-        self.ds_vacina = ds_vacina
+        self.cd_reforco = cd_reforco
+        self.num_duracao_meses = num_duracao_meses
        
