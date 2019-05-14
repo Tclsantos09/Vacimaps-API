@@ -252,9 +252,9 @@ def post_user_vacina(current_user):
     user_vacina = Usuario_Vacina(
         id_usuario = current_user.id_usuario,
         id_vacina=data['id_vacina'],
-        ds_local_vacina=data['ds_local_vacina'],
+        ds_local_vacina=data['lote'], #Criar campo para o LOte no Banco e na Aplicação
         data_vacina=data['data_vacina'],
-        data_reforco = '2019-02-02'
+        data_reforco = ''
     )    
 
     try:
