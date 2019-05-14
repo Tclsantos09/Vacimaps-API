@@ -30,18 +30,21 @@ def get_one_user(current_user):
     usuario['dt_nascimento'] = user.dt_nascimento
 
     vacinas = []
-    if vacinas_user:
-        _vacina = {}
+    if vacinas_user:        
         for vacina in vacinas_user:
+            _vacina = {}
             nm_vacina = Vacina.query.filter_by(id_vacina = vacina.id_vacina).first()
             _vacina['vacina'] = nm_vacina.nome_vacina
             _vacina['reforço'] = nm_vacina.cd_reforco
             _vacina['id'] = vacina.id_usuario_vacina
-            _vacina['data_vacina'] = vacina.data_vacina.strftime('%d/%m/%Y')
-            _vacina['data_reforco'] = vacina.data_reforco.strftime('%d/%m/%Y')
+            _vacina['id_vacina'] = vacina.id_vacina
+            _vacina['data_vacina'] = vacina.data_vacina.strftime('%Y/%m/%d')
+            _vacina['data_reforco'] = vacina.data_reforco.strftime('%Y/%m/%d')
             _vacina['local'] = vacina.ds_local_vacina
-        vacinas.append(_vacina)
+            vacinas.append(_vacina)
+
         usuario['vacinas'] = vacinas
+
     else:
         usuario['vacinas'] = "Nenhuma vacina cadastrada!"
     
@@ -89,8 +92,8 @@ def edit_usuario(current_user):
         if data['nome']:
             usuario.nome = data['nome']
 
-        if data['email']:
-            usuario.email = data['email']
+        if data['dt_nascimento']:
+            usuario.dt_nascimento = data['dt_nascimento']
 
         db.session.commit()
 
@@ -224,12 +227,12 @@ def change_password(current_user):
 @app.route('/usuario/vacina/<id_vacina>', methods=['GET'])
 @token_required
 def get_one_user_vacina(current_user,id_vacina):
-    vacinas_user = Usuario_Vacina.query.filter_by(id_vacina = id_vacina).first()    
+    vacinas_user = Usuario_Vacina.query.filter_by(id_usuario_vacina = id_vacina).first()    
 
     if not vacinas_user:
         return jsonify({'Mensagem': 'Vacina não encontrada!'})
 
-    nm_vacina = Vacina.query.filter_by(id_usuario_vacina = vacinas_user.id_vacina).first()
+    nm_vacina = Vacina.query.filter_by(id_vacina = vacinas_user.id_vacina).first()
 
     if vacinas_user:
         vacina = {}
@@ -254,8 +257,8 @@ def post_user_vacina(current_user):
         id_vacina=data['id_vacina'],
         ds_local_vacina=data['lote'], #Criar campo para o LOte no Banco e na Aplicação
         data_vacina=data['data_vacina'],
-        data_reforco = ''
-    )    
+        data_reforco = '2020-03-06'
+    )      
 
     try:
         db.session.add(user_vacina)
@@ -279,6 +282,9 @@ def edit_user_vacina(current_user,id_vacina):
         return jsonify({'Mensagem': 'Vacina não encontrado!'})
 
     else:
+        if data['id_vacina']:
+            vacinas_user.id_vacina = data['id_vacina']
+            
         if data['data_vacina']:
             vacinas_user.data_vacina = data['data_vacina']
 
